@@ -1,41 +1,34 @@
-import React, { Component } from 'react'; 
+import React, { useEffect } from 'react'; 
 import { createPortal } from 'react-dom';
 import { Overlay, ModalDiv } from './Modal.styled';
 
 const modalRoot = document.querySelector('#modal-root');
 
-export class Modal extends Component {
+export const Modal = ({ children, onClose }) => {
 
-    componentDidMount() {
-        window.addEventListener('keydown', this.handleKeyDown);
-    }
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        }
+    });
 
-    componentWillUnmount() {
-        //подчищать ивент-лисенери, тайм-ауті, http-запросі и другое
-        window.removeEventListener('keydown', this.handleKeyDown);
-    }
-
-    handleKeyDown = e => {
+    const handleKeyDown = e => {
         if (e.code === 'Escape') {
-            this.props.onClose();
+            onClose();
         }
     };
 
-    handleBackdropClick = e => {
+    const handleBackdropClick = e => {
         if (e.currentTarget === e.target) {
-            this.props.onClose();
+            onClose();
         }
-    }
+    };
 
-    render() {
-        //рендер портала
-        return createPortal(
-            //первім аргументом( до запятой,) передаю разметку
-            <Overlay onClick={this.handleBackdropClick}>
-                <ModalDiv>{this.props.children}</ModalDiv>
-            </Overlay>,
-            //вторім аргументом передаю ссілку на портал
-            modalRoot
-        );
-    }
-}
+    return createPortal(
+        <Overlay onClick={handleBackdropClick}>
+            <ModalDiv>{children}</ModalDiv>
+        </Overlay>,
+        modalRoot
+    );
+};
