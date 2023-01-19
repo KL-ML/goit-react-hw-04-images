@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import PropTypes from 'prop-types';
+import React, { useEffect, useState } from "react";
+// import PropTypes from 'prop-types';
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { ImageGalleryItem } from "./ImageGalleryItem";
@@ -9,137 +9,95 @@ import { ImageGalleryList } from "./ImageGallery.styled";
 import { Loader } from "components/Loader";
 import { Button } from "components/Button";
 
-export class ImageGallery extends Component {
-    static propTypes = {
-    searchValue: PropTypes.string.isRequired,
-  };
-    state = {
-        error: null,
-        loading: false,
-        showModal: false,
-        showLoadMoreBtn: false,
-        value: '',
-        images: [],
-        page: 1,
-        totalHits: 0,
-    };
-    currentLargeImg = '';
-    currentAlt = '';
+export const ImageGallery = ({ searchValue }) => {
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [value, setValue] = useState('');
+    const [images, setImages] = useState([]);
+    const [page, setPage] = useState(1);
+    const [totalHits, setTotalHits] = useState(0);
 
-    componentDidMount() {
-        const { searchValue } = this.props;
-        this.setState({ value: searchValue });
-    }
+    const [currentLargeImg, setCurrentLargeImg] = useState('');
+    const [currentAlt, setCurrentAlt] = useState(''); 
 
-    componentDidUpdate(prevProps, prevState) {
-        const { searchValue } = this.props;
-        if (prevProps.searchValue !== searchValue) {
-            this.setState({
-                error: null,
-                loading: false,
-                showModal: false,
-                showLoadMoreBtn: false,
-                value: searchValue,
-                images: [],
-                page: 1,
-                totalHits: 0,
+    useEffect(() => {
+            setError(null);
+            setLoading(false);
+            setShowModal(false);
+            setValue(searchValue);
+            setImages([]);
+            setPage(1);
+            setTotalHits(0);
+    }, [searchValue]);
+
+    useEffect(() => {
+        if (!value) {
+            setValue(searchValue);
+            return;
+        }
+        setLoading(true);
+        imagesApi.fetchImages(value, page)
+            .then(({ hits, totalHits }) => {
+                if (!hits.length) {
+                    return Promise.reject(
+                        toast.error(`No photos for search query: ${value}`)
+                    )
+                };
+                const imagesForLoadMore = hits.map(
+                    ({ id, tags, webformatURL, largeImageURL }) => ({
+                        id,
+                        tags,
+                        webformatURL,
+                        largeImageURL,
+                    })
+                );
+                setImages(prevImgs => ([...prevImgs, ...imagesForLoadMore]));
+                setTotalHits(totalHits);     
             })
-        }
+            .catch(error => {
+                setError(error);
+                setTotalHits(0);
+            })
+            .finally(() => setLoading(false));
+    }, [page, value]);
 
-        //всегда нужно делать проверку, иначе упадет приложение
-        const { page, value } = this.state;
-        // const changePage = prevState.page !== page;
-        // const changeValue = prevState.value !== value;
-        // const prevSearchValue = prevProps.searchValue;
-        // const nextSearchValue = this.props.searchValue;
-        // const prevPage = prevState.page;
-        // const nextPage = this.state.page;
-        // if (prevSearchValue !== nextSearchValue || prevPage !== nextPage) {
-        if( prevState.page !== page || prevState.value !== value) {
-            this.setState({ loading: true });
-            imagesApi.fetchImages(value, page)
-                .then(({ hits, totalHits }) => {
-                    if (!hits.length) {
-                        return Promise.reject(
-                            toast.error(`No photos for search query: ${value}`)
-                            // new Error(`No photos for search query: ${value}`)
-                        );
-                    }
-                    const imagesForLoadMore = hits.map(
-                        ({ id, tags, webformatURL, largeImageURL }) => ({
-                            id,
-                            tags,
-                            webformatURL,
-                            largeImageURL,
-                        })
-                    );
-                    // console.log('imagesForLoadMore: ', imagesForLoadMore);
-                    this.setState(prevState => ({
-                        images: [...prevState.images, ...imagesForLoadMore],
-                        // status: 'resolved',
-                        // showLoadMoreBtn: true,
-                        totalHits,
-                    }));
-                    // console.log('images: ', this.state.images);
-                    
-                })
-                .catch(error => this.setState({ error, totalHits: 0 }))
-                .finally(() => this.setState({ loading: false }));
-        }
+    const onImgClick = (e) => {
+        setCurrentLargeImg(e.target.attributes[2].nodeValue);
+        setCurrentAlt(e.target.attributes[1].nodeValue);
+        toggleModal();
     }
 
-    toggleModal = () => {
-        this.setState(({ showModal }) => ({
-            showModal: !showModal
-        }));
-    };
+    const toggleModal = () => {
+        setShowModal(!showModal)
+    };    
 
-    // openLoadMoreBtn = () => {
-    //     this.setState(({ showLoadMoreBtn }) => ({
-    //         showLoadMoreBtn: true,
-    //     }));
-    // }
-    // openLoadMoreBtn = () => {
-    //     this.setState(({ showLoadMoreBtn }) => ({
-    //         showLoadMoreBtn: true,
-    //     }));
-    // }
-
-    onLoadMoreBtnClick = () => {
-        this.setState(prevState => ({ page: prevState.page + 1 }));
+    const onLoadMoreBtnClick = () => {
+        setPage(prev => (prev + 1 ));
     }
 
-    onImgClick = (e) => {
-        this.currentLargeImg = e.target.attributes[2].nodeValue;
-        this.currentAlt = e.target.attributes[1].nodeValue;
-        this.toggleModal();
-    }
-    
-    render() {
-        const { images, error, showModal, totalHits, loading } = this.state;
-        
-        return (<>
-            {!error && (
-                <ImageGalleryList onClick={this.onImgClick}>
-                    {images.map(({ id, tags, webformatURL, largeImageURL }) => (
-                        <ImageGalleryItem
-                            key={id}
-                            id={id}
-                            tags={tags}
-                            webformatURL={webformatURL}
-                            largeImageURL={largeImageURL}
-                        />
-                    ))}
-                </ImageGalleryList>)}
-            {loading && (<Loader />)}
-            {images.length < totalHits && (
-                <Button onClick={this.onLoadMoreBtnClick}>LoadMore</Button>
-            )}
+    return (<>
+        {!error && (
+            <ImageGalleryList onClick={onImgClick}>
+                {images.map(({ id, tags, webformatURL, largeImageURL }) => (
+                    <ImageGalleryItem
+                        key={id}
+                        id={id}
+                        tags={tags}
+                        webformatURL={webformatURL}
+                        largeImageURL={largeImageURL}
+                    />
+                ))}
+            </ImageGalleryList>)}
+        {loading && (<Loader />)}
+        {images.length < totalHits && (
+            <Button onClick={onLoadMoreBtnClick}>LoadMore</Button>
+        )}
                 
-            {showModal && <Modal onClose={this.toggleModal} >
-                <img src={this.currentLargeImg} alt={this.currentAlt} />
-            </Modal>}
-        </>
-        );
-    };
+        {showModal && <Modal onClose={toggleModal} >
+            {/* <p>Here is your image</p> */}
+            <img src={currentLargeImg} alt={currentAlt}/>
+        </Modal>}
+    </>
+    );
 };
