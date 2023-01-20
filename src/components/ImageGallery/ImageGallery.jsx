@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ImageGalleryItem } from "./ImageGalleryItem";
 import imagesApi from '../../api/image-searcher-api';
 import { Modal } from '../Modal';
-import { ImageGalleryList } from "./ImageGallery.styled";
+import { ImageGalleryList, ImageForModal } from "./ImageGallery.styled";
 import { Loader } from "components/Loader";
 import { Button } from "components/Button";
 
@@ -95,8 +95,7 @@ export const ImageGallery = ({ searchValue }) => {
         )}
                 
         {showModal && <Modal onClose={toggleModal} >
-            {/* <p>Here is your image</p> */}
-            <img src={currentLargeImg} alt={currentAlt}/>
+            <ImageForModal src={currentLargeImg} alt={currentAlt}/>
         </Modal>}
     </>
     );
