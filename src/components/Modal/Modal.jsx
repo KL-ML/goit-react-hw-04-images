@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'; 
 import { createPortal } from 'react-dom';
-import { Overlay, ModalDiv } from './Modal.styled';
+import { Overlay } from './Modal.styled';
 
 const modalRoot = document.querySelector('#modal-root');
 
@@ -27,7 +27,7 @@ export const Modal = ({ children, onClose }) => {
 
     return createPortal(
         <Overlay onClick={handleBackdropClick}>
-            <ModalDiv>{children}</ModalDiv>
+            <div>{children}</div>
         </Overlay>,
         modalRoot
     );
