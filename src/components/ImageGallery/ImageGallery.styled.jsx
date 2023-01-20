@@ -12,3 +12,9 @@ export const ImageGalleryList = styled.ul`
     margin-left: auto;
     margin-right: auto;
 `
+
+export const ImageForModal = styled.img`
+    max-width: calc(100vw - 48px);
+    max-height: calc(100vh - 24px);
+    border-radius: 3px;
+`
