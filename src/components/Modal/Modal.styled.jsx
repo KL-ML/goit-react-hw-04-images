@@ -12,31 +12,3 @@ export const Overlay = styled.div`
     background-color: rgba(0, 0, 0, 0.8);
     z-index: 1200;
 `
-export const ModalDiv = styled.div`
-    /* max-width: calc(100vw - 48px);
-    max-height: calc(100vh - 24px); */
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    min-height: 300px;
-    max-width: 600px;
-    width: 100%;
-    background-color: #fff;
-
-`
-export const ModalContent = styled.div`
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    min-height: 300px;
-    max-width: 600px;
-    width: 100%;
-    padding: 12px;
-    background-color: #fff;
-    border-radius: 3px;
-    box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2),
-        0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12);
-
-`
