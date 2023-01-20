@@ -33,11 +33,11 @@ export const ImageGallery = ({ searchValue }) => {
 
     useEffect(() => {
         if (!value) {
-            setValue(searchValue);
             return;
         }
         setLoading(true);
-        imagesApi.fetchImages(value, page)
+        imagesApi
+            .fetchImages(value, page)
             .then(({ hits, totalHits }) => {
                 if (!hits.length) {
                     return Promise.reject(
